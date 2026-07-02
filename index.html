@@ -1,0 +1,474 @@
+<!-- Sprite Hunt — OBS overlay / dashboard. Self-contained, no external deps except optional web font. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sprite Hunt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#0a0817; --bg1:#141033; --bg2:#1c1440;
+  --panel:rgba(23,18,52,.72); --panel-solid:#171234;
+  --stroke:rgba(150,120,255,.16); --stroke2:rgba(150,120,255,.28);
+  --ink:#f2ecff; --muted:#a99fd6; --faint:#6f6699;
+  --hunt:#ff44b8; --owned:#38e07a; --owned-dim:#1f7a48;
+  --r-rare:#37a9ff; --r-epic:#b14bff; --r-legend:#ff9d2b; --r-mythic:#ffd24a;
+  --t-basic:#93a0bd; --t-gold:#f5c542; --t-gummy:#ff6ec7; --t-galaxy:#8b6bff; --t-gem:#34e0d0; --t-holo:#38e8ff; --t-rift:#c266ff;
+  --holo:linear-gradient(115deg,#00e5ff 0%,#ff4dd8 34%,#ffd24a 66%,#00e5ff 100%);
+  --display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
+  --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  font-family:var(--body); color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 82% -8%, rgba(255,77,216,.20), transparent 55%),
+    radial-gradient(1000px 700px at 8% 108%, rgba(0,229,255,.16), transparent 55%),
+    radial-gradient(900px 800px at 50% 40%, rgba(139,107,255,.14), transparent 60%),
+    linear-gradient(160deg,var(--bg0),var(--bg1) 55%,var(--bg2));
+  min-height:100%; overflow-x:hidden;
+}
+body.transparent{background:transparent}
+body.transparent .shell{background:rgba(10,8,23,.42); backdrop-filter:blur(3px)}
+.shell{max-width:1860px; margin:0 auto; padding:22px 26px 30px}
+
+/* ---------- HERO ---------- */
+.hero{
+  display:grid; grid-template-columns:auto 1fr auto; gap:26px; align-items:center;
+  padding:20px 26px; border-radius:22px;
+  background:var(--panel); border:1px solid var(--stroke2);
+  box-shadow:0 24px 60px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.05);
+  position:relative; overflow:hidden;
+}
+.hero::before{content:""; position:absolute; inset:0; padding:1px; border-radius:22px;
+  background:var(--holo); background-size:300% 300%; animation:holo 9s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; opacity:.5; pointer-events:none}
+@keyframes holo{to{background-position:300% 0}}
+
+/* scope ring */
+.scope{position:relative; width:150px; height:150px; flex:none}
+.scope svg{transform:rotate(-90deg)}
+.scope .tick{position:absolute; inset:0; border-radius:50%;
+  background:
+   conic-gradient(from 0deg, transparent 0 3deg, rgba(255,255,255,.22) 3deg 4deg, transparent 4deg 90deg,
+     rgba(255,255,255,.22) 90deg 91deg, transparent 91deg 180deg,
+     rgba(255,255,255,.22) 180deg 181deg, transparent 181deg 270deg,
+     rgba(255,255,255,.22) 270deg 271deg, transparent 271deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 62px, #000 62px, #000 71px, transparent 72px);
+          mask:radial-gradient(circle, transparent 62px, #000 62px, #000 71px, transparent 72px);}
+.scope .core{position:absolute; inset:0; display:grid; place-content:center; text-align:center}
+.scope .pct{font-family:var(--display); font-weight:700; font-size:34px; line-height:1;
+  background:var(--holo); background-size:200%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:holo 6s linear infinite}
+.scope .pct-l{font-size:11px; letter-spacing:.18em; color:var(--muted); margin-top:5px; text-transform:uppercase}
+
+.hero-mid{min-width:0}
+.title{font-family:var(--display); font-weight:700; letter-spacing:.01em; font-size:40px; line-height:.98; margin:0;
+  text-shadow:0 2px 30px rgba(255,77,216,.35)}
+.title .sp{color:#fff}
+.title .hunt{background:var(--holo); background-size:200%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:holo 5s linear infinite}
+.subtitle{margin:7px 0 14px; color:var(--muted); font-size:14px; font-weight:500}
+.subtitle b{color:var(--hunt); font-weight:700}
+.bar{height:14px; border-radius:99px; background:rgba(255,255,255,.06); overflow:hidden; border:1px solid var(--stroke)}
+.bar > i{display:block; height:100%; width:0; border-radius:99px; background:var(--holo); background-size:220%;
+  animation:holo 5s linear infinite; box-shadow:0 0 18px rgba(255,77,216,.5); transition:width .6s cubic-bezier(.2,.9,.2,1)}
+.bar-cap{display:flex; justify-content:space-between; margin-top:7px; font-size:12.5px; color:var(--muted); font-weight:600}
+.bar-cap b{color:var(--ink)}
+
+.stats{display:flex; gap:12px; flex:none}
+.stat{min-width:96px; padding:13px 16px; border-radius:16px; text-align:center;
+  background:rgba(255,255,255,.035); border:1px solid var(--stroke)}
+.stat .n{font-family:var(--display); font-weight:700; font-size:28px; line-height:1}
+.stat .l{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:6px}
+.stat.hunt .n{color:var(--hunt); text-shadow:0 0 22px rgba(255,68,184,.55)}
+.stat.owned .n{color:var(--owned)}
+.stat.myth .n{color:var(--r-mythic)}
+
+/* ---------- CONTROLS ---------- */
+.controls{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; margin:18px 2px 16px}
+.seg{display:inline-flex; padding:4px; gap:3px; background:rgba(255,255,255,.04); border:1px solid var(--stroke); border-radius:13px}
+.seg button{font-family:var(--body); font-weight:600; font-size:13px; color:var(--muted); background:none; border:0; cursor:pointer;
+  padding:7px 15px; border-radius:10px; transition:.15s}
+.seg button:hover{color:var(--ink)}
+.seg button.on{color:#0c0a1c; background:var(--holo); background-size:200%; animation:holo 5s linear infinite}
+.seg button.on.hunt-on{background:var(--hunt); color:#fff; animation:none}
+.seg button.on.owned-on{background:var(--owned); color:#08260f; animation:none}
+
+.chips{display:flex; flex-wrap:wrap; gap:7px}
+.chip{font-size:12px; font-weight:600; color:var(--muted); cursor:pointer; user-select:none;
+  padding:6px 12px 6px 10px; border-radius:99px; border:1px solid var(--stroke); background:rgba(255,255,255,.03);
+  display:inline-flex; align-items:center; gap:7px; transition:.15s}
+.chip .dot{width:9px; height:9px; border-radius:50%; box-shadow:0 0 8px currentColor}
+.chip:hover{border-color:var(--stroke2); color:var(--ink)}
+.chip.on{color:var(--ink); background:rgba(255,255,255,.09); border-color:var(--stroke2)}
+
+.search{flex:1; min-width:150px; max-width:280px; margin-left:auto}
+.search input{width:100%; font-family:var(--body); font-size:13px; color:var(--ink);
+  padding:9px 14px; border-radius:12px; border:1px solid var(--stroke); background:rgba(255,255,255,.04)}
+.search input::placeholder{color:var(--faint)}
+.search input:focus{outline:none; border-color:var(--hunt)}
+
+.toggles{display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin:0 2px 18px; color:var(--muted); font-size:12.5px; font-weight:500}
+.tg{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none}
+.tg input{appearance:none; width:34px; height:19px; border-radius:99px; background:rgba(255,255,255,.12); position:relative; cursor:pointer; transition:.2s; flex:none}
+.tg input::after{content:""; position:absolute; width:14px; height:14px; border-radius:50%; background:#fff; top:2px; left:2px; transition:.2s}
+.tg input:checked{background:var(--hunt)}
+.tg input:checked::after{left:16px}
+.spacer{flex:1}
+.act{font-family:var(--body); font-weight:600; font-size:12.5px; color:var(--muted); cursor:pointer;
+  padding:8px 13px; border-radius:11px; border:1px solid var(--stroke); background:rgba(255,255,255,.03); transition:.15s}
+.act:hover{color:var(--ink); border-color:var(--stroke2)}
+.act.danger:hover{color:#ff6b7a; border-color:rgba(255,107,122,.4)}
+.saved{font-size:11.5px; color:var(--owned); opacity:0; transition:opacity .3s}
+.saved.show{opacity:1}
+
+/* ---------- GRID ---------- */
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:14px}
+.card{position:relative; border-radius:18px; padding:14px 12px 12px; cursor:pointer;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
+  border:1px solid var(--stroke); transition:transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .18s, border-color .18s;
+  --glow:var(--r-rare)}
+.card:hover{transform:translateY(-5px); border-color:var(--stroke2)}
+.card .badge{position:absolute; top:9px; right:9px; width:26px; height:26px; border-radius:50%; display:grid; place-content:center;
+  font-size:14px; z-index:2; transition:.18s}
+.card .thumb{position:relative; aspect-ratio:1; display:grid; place-content:center; margin-bottom:9px}
+.card .thumb img{width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 8px 16px rgba(0,0,0,.5)); transition:.25s}
+.card .nm{font-family:var(--display); font-weight:600; font-size:14.5px; text-align:center; line-height:1.05; margin-bottom:9px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.card .meta{display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:10px}
+.rar{font-size:9.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; padding:3px 8px; border-radius:99px; color:#0c0a1c}
+.rar.rare{background:var(--r-rare)} .rar.epic{background:var(--r-epic); color:#fff}
+.rar.legendary{background:var(--r-legend)} .rar.mythic{background:linear-gradient(100deg,#ffe27a,#e39a1c)}
+.rar.special{background:var(--holo); background-size:220%; animation:holo 5s linear infinite}
+.tdot{width:10px; height:10px; border-radius:50%; box-shadow:0 0 7px currentColor; flex:none}
+.pips{display:flex; justify-content:center; gap:5px}
+.pip{width:15px; height:15px; border-radius:5px; background:rgba(255,255,255,.09); cursor:pointer; transition:.14s; border:1px solid transparent}
+.pip:hover{transform:scale(1.15)}
+.pip.f{background:var(--glow); box-shadow:0 0 8px var(--glow)}
+.pip.mx{background:var(--r-mythic); box-shadow:0 0 10px var(--r-mythic)}
+
+/* owned look */
+.card.owned{background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  border-color:color-mix(in srgb,var(--glow) 45%,transparent);
+  box-shadow:0 14px 40px -20px var(--glow), inset 0 0 34px -22px var(--glow)}
+.card.owned:hover{box-shadow:0 20px 46px -18px var(--glow), inset 0 0 40px -20px var(--glow)}
+.card.owned .thumb::after{content:""; position:absolute; inset:8% 8% 12%; border-radius:50%;
+  background:radial-gradient(circle,color-mix(in srgb,var(--glow) 55%,transparent),transparent 70%); filter:blur(14px); z-index:-1; opacity:.7}
+.card.owned .badge{background:var(--owned); color:#08260f; box-shadow:0 0 14px rgba(56,224,122,.6)}
+.card.mastered .badge{background:var(--r-mythic); color:#3a2600; box-shadow:0 0 16px rgba(255,210,74,.7)}
+
+/* hunting look */
+.card.hunting .thumb img{filter:grayscale(1) brightness(.5) contrast(.9)}
+.card.hunting .nm{color:var(--muted)}
+.card.hunting .badge{background:transparent; border:2px dashed var(--hunt); color:var(--hunt); animation:spin 6s linear infinite}
+.card.hunting::after{content:""; position:absolute; inset:-1px; border-radius:18px; pointer-events:none;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--hunt) 40%,transparent), 0 0 24px -6px var(--hunt); animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35} 50%{opacity:.9}}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.card.pop{animation:pop .5s cubic-bezier(.2,1.4,.35,1)}
+@keyframes pop{0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)}}
+
+.empty{grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--faint); font-size:15px}
+.unreleased-tag{position:absolute; top:9px; left:9px; font-size:8.5px; font-weight:700; letter-spacing:.1em;
+  color:var(--faint); background:rgba(0,0,0,.4); padding:2px 6px; border-radius:6px; text-transform:uppercase}
+
+/* confetti */
+.confetti{position:fixed; width:9px; height:9px; z-index:99; pointer-events:none; border-radius:2px}
+
+.footer{margin-top:26px; text-align:center; color:var(--faint); font-size:11.5px; letter-spacing:.03em}
+.footer a{color:var(--muted); text-decoration:none}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr; text-align:center; gap:18px}
+  .stats{justify-content:center; flex-wrap:wrap}
+  .scope{margin:0 auto}
+}
+.syncbar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:16px 2px 2px; padding:11px 16px;
+  background:rgba(255,255,255,.04); border:1px solid var(--stroke2); border-radius:14px}
+.syncbar .st{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink)}
+.syncbar .st .dot{width:9px; height:9px; border-radius:50%; background:#8a84b0; transition:.25s}
+.syncbar .divx{width:1px; height:20px; background:var(--stroke2)}
+.syncbar .lab{font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.syncbar input{flex:1; min-width:200px; font-family:var(--body); font-size:12.5px; color:var(--ink);
+  padding:8px 12px; border-radius:10px; border:1px solid var(--stroke); background:rgba(0,0,0,.28)}
+.syncbar input:focus{outline:none; border-color:var(--hunt)}
+.syncbar .room{font-size:12px; color:var(--muted); font-weight:600}
+.syncbar .room b{color:var(--ink); letter-spacing:.06em}
+</style>
+
+<div class="shell">
+  <div class="hero">
+    <div class="scope">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="62" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="11"/>
+        <circle id="ring" cx="75" cy="75" r="62" fill="none" stroke="url(#g)" stroke-width="11" stroke-linecap="round"
+                stroke-dasharray="389.5" stroke-dashoffset="389.5"/>
+        <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#00e5ff"/><stop offset=".5" stop-color="#ff4dd8"/><stop offset="1" stop-color="#ffd24a"/>
+        </linearGradient></defs>
+      </svg>
+      <div class="tick"></div>
+      <div class="core"><div class="pct" id="ringPct">0%</div><div class="pct-l">Collected</div></div>
+    </div>
+
+    <div class="hero-mid">
+      <h1 class="title"><span class="sp">SPRITE</span> <span class="hunt">HUNT</span></h1>
+      <p class="subtitle" id="sub">Still hunting <b id="subN">0</b> sprites</p>
+      <div class="bar"><i id="barFill"></i></div>
+      <div class="bar-cap"><span><b id="capOwned">0</b> owned</span><span><b id="capTotal">0</b> total released</span></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat owned"><div class="n" id="stOwned">0</div><div class="l">Owned</div></div>
+      <div class="stat hunt"><div class="n" id="stHunt">0</div><div class="l">Hunting</div></div>
+      <div class="stat myth"><div class="n" id="stMyth">0</div><div class="l">Rare left</div></div>
+    </div>
+  </div>
+
+  <div class="syncbar">
+    <span class="st"><span class="dot" id="syncDot"></span><span id="syncLabel">Connecting…</span></span>
+    <span class="divx"></span>
+    <span class="lab">OBS overlay URL</span>
+    <input id="overlayUrl" readonly value="">
+    <button class="act" id="copyUrl">Copy</button>
+    <span class="room">room <b id="roomCode">—</b></span>
+  </div>
+
+  <div class="controls">
+    <div class="seg" id="statusSeg">
+      <button data-status="all" class="on">All</button>
+      <button data-status="owned" class="owned-on">Owned</button>
+      <button data-status="hunting" class="hunt-on">Hunting</button>
+    </div>
+    <div class="chips" id="themeChips"></div>
+    <div class="search"><input id="search" type="text" placeholder="Search sprites…"></div>
+  </div>
+
+  <div class="toggles">
+    <label class="tg"><input type="checkbox" id="tgUnreleased"> Show unreleased</label>
+    <label class="tg"><input type="checkbox" id="tgTransparent"> Transparent background <span style="color:var(--faint)">(for OBS overlay)</span></label>
+    <span class="spacer"></span>
+    <span class="saved" id="saved">✓ Saved</span>
+    <button class="act" id="btnExport">Save backup</button>
+    <button class="act" id="btnImport">Load backup</button>
+    <button class="act danger" id="btnReset">Reset all</button>
+    <input type="file" id="fileIn" accept="application/json" style="display:none">
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="footer">
+    Click a sprite to toggle <b style="color:var(--owned)">owned</b> · click the pips to set mastery (0–5) · progress saves automatically.<br>
+    Sprite art from <a href="https://staticvacant.github.io/fnsprites/">staticvacant.github.io/fnsprites</a> · built for your Sprite Hunt stream
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
+<script src="sprites-data.js"></script>
+<script src="sync.js"></script>
+<script>
+const APPDATA = window.SPRITE_DATA;
+const SPRITES = APPDATA.sprites, IMAGES = APPDATA.images, MISSING = APPDATA.missing;
+const THEMES = ['Basic','Gold','Candy','Galaxy','Gem','Holofoil','Rift'];
+const THEME_LABEL = {Candy:'Gummy'};
+const THEME_COLOR = {Basic:'var(--t-basic)',Gold:'var(--t-gold)',Candy:'var(--t-gummy)',Galaxy:'var(--t-galaxy)',Gem:'var(--t-gem)',Holofoil:'var(--t-holo)',Rift:'var(--t-rift)'};
+const RARITY_COLOR = {Rare:'var(--r-rare)',Epic:'var(--r-epic)',Legendary:'var(--r-legend)',Mythic:'var(--r-mythic)',Special:'var(--holo)'};
+const KEY = 'spriteHuntState_v1';
+
+/* ---- state ---- */
+let state = {};
+function defaultState(){
+  const s = {};
+  for(const sp of SPRITES){
+    const owned = !sp.unreleased && !MISSING.includes(sp.id);
+    s[sp.id] = {owned, count: owned ? 5 : 0};
+  }
+  return s;
+}
+function load(){
+  try{ const raw = localStorage.getItem(KEY); if(raw){ state = JSON.parse(raw); } else { state = defaultState(); } }
+  catch(e){ state = defaultState(); }
+  for(const sp of SPRITES){ if(!state[sp.id]) state[sp.id] = {owned:false,count:0}; }
+}
+let saveTimer;
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); flashSaved(); }catch(e){}
+  schedulePublish();
+}
+function flashSaved(){ const el=document.getElementById('saved'); el.classList.add('show'); clearTimeout(saveTimer); saveTimer=setTimeout(()=>el.classList.remove('show'),1200); }
+
+/* ---- filters ---- */
+let filter = {status:'all', themes:new Set(), q:''};
+
+/* ---- build theme chips ---- */
+const chipWrap = document.getElementById('themeChips');
+for(const t of THEMES){
+  const c = document.createElement('div'); c.className='chip'; c.dataset.theme=t;
+  c.innerHTML = `<span class="dot" style="color:${THEME_COLOR[t]}"></span>${THEME_LABEL[t]||t}`;
+  c.onclick = ()=>{ filter.themes.has(t)?filter.themes.delete(t):filter.themes.add(t); c.classList.toggle('on'); render(); };
+  chipWrap.appendChild(c);
+}
+
+/* ---- render grid ---- */
+const grid = document.getElementById('grid');
+function visible(){
+  const showUn = document.getElementById('tgUnreleased').checked;
+  return SPRITES.filter(sp=>{
+    if(sp.unreleased && !showUn) return false;
+    const st = state[sp.id];
+    if(filter.status==='owned' && !st.owned) return false;
+    if(filter.status==='hunting' && st.owned) return false;
+    if(filter.themes.size && !filter.themes.has(sp.theme)) return false;
+    if(filter.q && !sp.name.toLowerCase().includes(filter.q)) return false;
+    return true;
+  });
+}
+function render(){
+  const list = visible();
+  grid.innerHTML='';
+  if(!list.length){ grid.innerHTML='<div class="empty">No sprites match these filters.</div>'; updateStats(); return; }
+  for(const sp of list){
+    const st = state[sp.id];
+    const card = document.createElement('div');
+    card.className = 'card ' + (st.owned ? (st.count>=5?'owned mastered':'owned') : 'hunting');
+    card.style.setProperty('--glow', RARITY_COLOR[sp.rarity]==='var(--holo)' ? 'var(--t-holo)' : RARITY_COLOR[sp.rarity]);
+    const badge = st.owned ? (st.count>=5?'★':'✓') : '◎';
+    const pips = [1,2,3,4,5].map(i=>`<div class="pip ${st.count>=i?(st.count>=5?'f mx':'f'):''}" data-i="${i}"></div>`).join('');
+    card.innerHTML = `
+      ${sp.unreleased?'<span class="unreleased-tag">Unreleased</span>':''}
+      <div class="badge">${badge}</div>
+      <div class="thumb"><img loading="lazy" src="${IMAGES[sp.id]||''}" alt=""></div>
+      <div class="nm">${sp.name}</div>
+      <div class="meta">
+        <span class="rar ${sp.rarity.toLowerCase()}">${sp.rarity}</span>
+        <span class="tdot" style="color:${THEME_COLOR[sp.theme]}"></span>
+      </div>
+      <div class="pips">${pips}</div>`;
+    card.onclick = e=>{ if(e.target.classList.contains('pip')) return; toggleOwned(sp.id, card); };
+    card.querySelectorAll('.pip').forEach(p=>{
+      p.onclick = e=>{ e.stopPropagation(); setCount(sp.id, +p.dataset.i); };
+    });
+    grid.appendChild(card);
+  }
+  updateStats();
+}
+
+function toggleOwned(id, card){
+  const st = state[id]; st.owned = !st.owned;
+  st.count = st.owned ? Math.max(st.count,1) : 0;
+  if(st.owned){ if(card){ card.classList.add('pop'); burst(card); } }
+  save(); render();
+}
+function setCount(id, i){
+  const st = state[id];
+  st.count = (st.count===i) ? i-1 : i;
+  st.owned = st.count>0 ? true : st.owned; // setting a pip implies owned
+  if(st.count>0) st.owned = true;
+  save(); render();
+}
+
+/* ---- stats ---- */
+function updateStats(){
+  const released = SPRITES.filter(s=>!s.unreleased);
+  const owned = released.filter(s=>state[s.id].owned);
+  const hunting = released.length - owned.length;
+  const rareLeft = released.filter(s=>!state[s.id].owned && (s.rarity==='Mythic'||s.rarity==='Legendary'||s.rarity==='Epic')).length;
+  const pct = released.length ? Math.round(owned.length/released.length*100) : 0;
+  document.getElementById('stOwned').textContent = owned.length;
+  document.getElementById('stHunt').textContent = hunting;
+  document.getElementById('stMyth').textContent = rareLeft;
+  document.getElementById('subN').textContent = hunting;
+  document.getElementById('capOwned').textContent = owned.length;
+  document.getElementById('capTotal').textContent = released.length;
+  document.getElementById('ringPct').textContent = pct+'%';
+  document.getElementById('barFill').style.width = pct+'%';
+  const C = 2*Math.PI*62;
+  document.getElementById('ring').style.strokeDashoffset = C*(1-pct/100);
+  const sub = document.getElementById('sub');
+  sub.innerHTML = hunting===0 ? '🏆 <b style="color:var(--owned)">Full collection complete!</b>' : `Still hunting <b>${hunting}</b> sprite${hunting===1?'':'s'}`;
+}
+
+/* ---- confetti burst ---- */
+function burst(card){
+  if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  const r = card.getBoundingClientRect();
+  const cx = r.left+r.width/2, cy = r.top+r.height/2;
+  const cols = ['#00e5ff','#ff4dd8','#ffd24a','#38e07a','#8b6bff'];
+  for(let i=0;i<16;i++){
+    const d = document.createElement('div'); d.className='confetti';
+    d.style.background = cols[i%cols.length];
+    d.style.left = cx+'px'; d.style.top = cy+'px';
+    document.body.appendChild(d);
+    const ang = Math.random()*Math.PI*2, dist = 50+Math.random()*90;
+    d.animate([
+      {transform:'translate(-50%,-50%) rotate(0) scale(1)', opacity:1},
+      {transform:`translate(${Math.cos(ang)*dist-50}%,${Math.sin(ang)*dist-50}%) rotate(${Math.random()*540}deg) scale(.3)`, opacity:0}
+    ],{duration:750+Math.random()*350, easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=()=>d.remove();
+  }
+}
+
+/* ---- controls wiring ---- */
+document.getElementById('statusSeg').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  filter.status = b.dataset.status;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on', x===b));
+  render();
+};
+document.getElementById('search').oninput = e=>{ filter.q = e.target.value.toLowerCase().trim(); render(); };
+document.getElementById('tgUnreleased').onchange = render;
+document.getElementById('tgTransparent').onchange = e=>{ document.body.classList.toggle('transparent', e.target.checked); };
+
+document.getElementById('btnExport').onclick = ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='sprite-hunt-backup.json'; a.click(); URL.revokeObjectURL(a.href);
+};
+document.getElementById('btnImport').onclick = ()=>document.getElementById('fileIn').click();
+document.getElementById('fileIn').onchange = e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = ()=>{ try{ state = JSON.parse(rd.result); for(const sp of SPRITES){ if(!state[sp.id]) state[sp.id]={owned:false,count:0}; } save(); render(); }catch(err){ alert('That file could not be read as a backup.'); } };
+  rd.readAsText(f); e.target.value='';
+};
+document.getElementById('btnReset').onclick = ()=>{
+  if(confirm('Reset all sprites to their starting state? This clears your saved progress.')){ state = defaultState(); save(); render(); }
+};
+
+/* ---- go ---- */
+/* ---------- live sync to the OBS overlay ---------- */
+let lastTs = 0, pubTimer = null;
+function publishState(){ lastTs = Date.now(); SpriteSync.publish({ ts:lastTs, data:state }); }
+function schedulePublish(){ clearTimeout(pubTimer); pubTimer = setTimeout(publishState, 200); }
+function onRemote(msg){
+  if(!msg || !msg.data || !msg.ts || msg.ts <= lastTs) return;  // ignore our own echo / older
+  lastTs = msg.ts; state = msg.data;
+  for(const sp of SPRITES){ if(!state[sp.id]) state[sp.id] = {owned:false,count:0}; }
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  render();
+}
+function setSyncStatus(s){
+  const dot = document.getElementById('syncDot'), label = document.getElementById('syncLabel');
+  if(!dot) return;
+  const map = { live:['#38e07a','Live'], connecting:['#ffce4a','Connecting…'], offline:['#ff6b7a','Offline'], idle:['#8a84b0','—'] };
+  const [c,t] = map[s] || map.idle;
+  dot.style.background = c; dot.style.boxShadow = '0 0 10px '+c; label.textContent = t;
+}
+function initSync(){
+  const room = SpriteSync.resolveRoom();
+  document.getElementById('roomCode').textContent = room;
+  document.getElementById('overlayUrl').value = SpriteSync.overlayUrl(room);
+  SpriteSync.init({ room, onState:onRemote, onStatus:setSyncStatus });
+  setTimeout(()=>{ if(SpriteSync.state==='live') publishState(); }, 1400); // seed broker with current state
+}
+document.getElementById('copyUrl').onclick = ()=>{
+  const el = document.getElementById('overlayUrl'); el.select();
+  const done = ()=>{ const b=document.getElementById('copyUrl'); const o=b.textContent; b.textContent='Copied ✓'; setTimeout(()=>b.textContent=o,1400); };
+  if(navigator.clipboard){ navigator.clipboard.writeText(el.value).then(done).catch(()=>{document.execCommand('copy');done();}); }
+  else { document.execCommand('copy'); done(); }
+};
+
+load(); render(); initSync();
+</script>
