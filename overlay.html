@@ -1,7 +1,7 @@
-<!-- Sprite Hunt — "Now Hunting" compact OBS overlay. Transparent. Live-syncs to the dashboard via shared localStorage. -->
+<!-- Sprite Hunt - horizontal OBS overlay. Transparent. Live-syncs to the dashboard room. -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Now Hunting — Sprite Overlay</title>
+<title>Now Hunting - Sprite Overlay</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@600;700;800&display=swap" rel="stylesheet">
@@ -9,7 +9,7 @@
 :root{
   --ink:#f4eeff; --muted:#c7bdf0; --hunt:#ff44b8; --owned:#38e07a;
   --r-rare:#37a9ff; --r-epic:#b14bff; --r-legend:#ff9d2b; --r-mythic:#ffd24a;
-  --t-basic:#93a0bd; --t-gold:#f5c542; --t-gummy:#ff6ec7; --t-galaxy:#8b6bff; --t-gem:#34e0d0; --t-holo:#38e8ff; --t-rift:#c266ff;
+  --t-basic:#93a0bd; --t-gold:#f5c542; --t-gummy:#ff6ec7; --t-galaxy:#8b6bff; --t-gem:#34e0d0; --t-holo:#38e8ff; --t-rift:#c266ff; --t-cube:#7bd2ff; --t-quack:#ffd24a;
   --holo:linear-gradient(115deg,#00e5ff 0%,#ff4dd8 34%,#ffd24a 66%,#00e5ff 100%);
   --display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
   --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -20,120 +20,128 @@ html,body{height:100%; background:transparent!important; overflow:hidden}
 body{font-family:var(--body); color:var(--ink); display:grid; place-items:center;
   -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
 
-.wrap{width:340px; padding:6px; user-select:none}
+.wrap{width:min(920px,100vw); padding:8px; user-select:none}
 
-/* HUD row */
-.hud{display:flex; align-items:center; justify-content:space-between; padding:0 6px 10px}
-.eyebrow{font-family:var(--display); font-weight:700; font-size:13px; letter-spacing:.22em;
-  color:#fff; text-transform:uppercase; display:flex; align-items:center; gap:8px;
-  text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.hud{height:36px; display:flex; align-items:center; justify-content:space-between; gap:14px; padding:0 8px 8px}
+.eyebrow{font-family:var(--display); font-weight:700; font-size:15px; letter-spacing:.18em;
+  color:#fff; text-transform:uppercase; display:flex; align-items:center; gap:9px;
+  text-shadow:0 2px 14px rgba(0,0,0,.65); white-space:nowrap}
 .eyebrow .ret{width:12px; height:12px; border:2px solid var(--hunt); border-radius:50%; position:relative; animation:spin 4s linear infinite}
 .eyebrow .ret::after{content:""; position:absolute; inset:2px; border-radius:50%; background:var(--hunt); box-shadow:0 0 8px var(--hunt)}
-.left{font-family:var(--display); font-weight:600; font-size:13px; color:var(--muted);
-  background:rgba(12,10,28,.6); padding:5px 12px; border-radius:99px; border:1px solid rgba(255,68,184,.35);
-  backdrop-filter:blur(6px); text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.status{display:flex; align-items:center; gap:8px; min-width:0}
+.left,.range{font-family:var(--display); font-weight:600; font-size:13px; color:var(--muted);
+  background:rgba(12,10,28,.62); padding:5px 12px; border-radius:99px; border:1px solid rgba(255,68,184,.32);
+  backdrop-filter:blur(6px); text-shadow:0 1px 6px rgba(0,0,0,.5); white-space:nowrap}
 .left b{color:var(--hunt); font-weight:700}
 
-/* stage / card */
-.stage{position:relative; height:392px}
-.card{position:absolute; inset:0; border-radius:26px; padding:20px 18px 18px;
-  background:linear-gradient(180deg,rgba(24,18,52,.82),rgba(14,10,32,.9));
-  border:1px solid color-mix(in srgb,var(--glow) 40%,transparent);
-  box-shadow:0 26px 60px -26px rgba(0,0,0,.85), 0 0 46px -20px var(--glow), inset 0 1px 0 rgba(255,255,255,.06);
-  backdrop-filter:blur(10px);
-  display:flex; flex-direction:column; align-items:center;
-  opacity:0; transform:scale(.94) translateY(8px); transition:opacity .45s, transform .45s cubic-bezier(.2,.9,.2,1); overflow:hidden}
-.card.in{opacity:1; transform:none}
-.card.out{opacity:0; transform:scale(.94) translateY(-8px)}
-.card::before{content:""; position:absolute; inset:0; padding:1px; border-radius:26px;
-  background:var(--glow); opacity:.35; -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+.stage{position:relative; height:154px; border-radius:24px; overflow:hidden;
+  background:linear-gradient(90deg,rgba(24,18,52,.78),rgba(14,10,32,.86));
+  border:1px solid rgba(150,120,255,.22);
+  box-shadow:0 20px 52px -30px rgba(0,0,0,.9), inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter:blur(10px)}
+.stage::before{content:""; position:absolute; inset:-40%; background:
+  radial-gradient(circle at 18% 40%,rgba(255,68,184,.20),transparent 24%),
+  radial-gradient(circle at 82% 48%,rgba(0,229,255,.16),transparent 25%);
+  filter:blur(4px); pointer-events:none}
+.track{position:relative; z-index:1; height:100%; display:grid; grid-template-columns:repeat(var(--show,3),1fr); gap:10px;
+  padding:12px; opacity:0; transform:translateX(18px); transition:opacity .32s, transform .32s cubic-bezier(.2,.9,.2,1)}
+.track.in{opacity:1; transform:none}
+.track.out{opacity:0; transform:translateX(-18px)}
+
+.item{position:relative; min-width:0; border-radius:18px; padding:10px 11px; overflow:hidden;
+  display:grid; grid-template-columns:76px minmax(0,1fr); align-items:center; gap:10px;
+  background:linear-gradient(180deg,rgba(18,14,40,.72),rgba(10,8,24,.84));
+  border:1px solid color-mix(in srgb,var(--glow) 42%,transparent);
+  box-shadow:0 0 32px -22px var(--glow), inset 0 1px 0 rgba(255,255,255,.06)}
+.item::before{content:""; position:absolute; inset:0; padding:1px; border-radius:18px;
+  background:var(--glow); opacity:.26; -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
   -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none}
-.card.special::before{background:var(--holo); background-size:300%; animation:holo 8s linear infinite; opacity:.5}
+.item.special::before{background:var(--holo); background-size:300%; animation:holo 8s linear infinite; opacity:.46}
+.item.lead{background:linear-gradient(180deg,rgba(35,24,76,.78),rgba(13,10,32,.9));
+  transform:translateY(-2px); box-shadow:0 14px 36px -28px rgba(0,0,0,.95),0 0 42px -20px var(--glow)}
 
-.rarity-eyebrow{font-family:var(--display); font-weight:700; font-size:11px; letter-spacing:.2em; text-transform:uppercase;
-  color:var(--glow); margin-bottom:6px; opacity:.9}
-.card.special .rarity-eyebrow{background:var(--holo); background-size:200%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:holo 6s linear infinite}
-
-/* art + reticle */
-.art{position:relative; width:210px; height:210px; display:grid; place-items:center; margin:2px 0 6px}
+.art{position:relative; width:76px; height:76px; display:grid; place-items:center}
 .art .aura{position:absolute; width:78%; height:78%; border-radius:50%;
-  background:radial-gradient(circle,color-mix(in srgb,var(--glow) 70%,transparent),transparent 68%); filter:blur(20px); opacity:.6}
-.card.special .art .aura{background:radial-gradient(circle,rgba(255,77,216,.6),rgba(0,229,255,.35) 60%,transparent 72%)}
+  background:radial-gradient(circle,color-mix(in srgb,var(--glow) 72%,transparent),transparent 68%); filter:blur(14px); opacity:.7}
+.item.special .art .aura{background:radial-gradient(circle,rgba(255,77,216,.62),rgba(0,229,255,.38) 60%,transparent 72%)}
 .art img{position:relative; width:100%; height:100%; object-fit:contain; z-index:1;
-  filter:grayscale(.4) brightness(.92) drop-shadow(0 10px 18px rgba(0,0,0,.55));
-  animation:bob 3.6s ease-in-out infinite; transition:filter .5s, transform .5s}
-@keyframes bob{0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)}}
-.reticle{position:absolute; inset:2px; z-index:2; pointer-events:none; opacity:.85}
+  filter:grayscale(.25) brightness(.96) drop-shadow(0 9px 14px rgba(0,0,0,.55));
+  animation:bob 3.6s ease-in-out infinite}
+.item.lead .art img{filter:grayscale(.12) brightness(1.04) saturate(1.08) drop-shadow(0 10px 16px rgba(0,0,0,.58))}
+.reticle{position:absolute; inset:4px; z-index:2; pointer-events:none; opacity:.58}
 .reticle .ring{position:absolute; inset:0; border:2px dashed var(--hunt); border-radius:50%; animation:spin 9s linear infinite}
 .reticle .cross{position:absolute; background:var(--hunt); box-shadow:0 0 6px var(--hunt)}
-.reticle .h{left:50%; top:6px; width:2px; height:14px; transform:translateX(-50%)}
-.reticle .h2{left:50%; bottom:6px; width:2px; height:14px; transform:translateX(-50%)}
-.reticle .v{top:50%; left:6px; height:2px; width:14px; transform:translateY(-50%)}
-.reticle .v2{top:50%; right:6px; height:2px; width:14px; transform:translateY(-50%)}
+.reticle .h{left:50%; top:5px; width:2px; height:9px; transform:translateX(-50%)}
+.reticle .h2{left:50%; bottom:5px; width:2px; height:9px; transform:translateX(-50%)}
+.reticle .v{top:50%; left:5px; height:2px; width:9px; transform:translateY(-50%)}
+.reticle .v2{top:50%; right:5px; height:2px; width:9px; transform:translateY(-50%)}
 
-.name{font-family:var(--display); font-weight:700; font-size:26px; line-height:1.02; text-align:center; color:#fff;
-  text-shadow:0 2px 20px var(--glow); margin-top:2px}
-.card.special .name{text-shadow:0 2px 22px rgba(255,77,216,.6)}
-.meta{display:flex; align-items:center; gap:9px; margin-top:11px}
-.rar{font-family:var(--body); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
-  padding:5px 12px; border-radius:99px; color:#0c0a1c}
+.info{min-width:0; display:flex; flex-direction:column; gap:7px}
+.kicker{font-family:var(--display); font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--glow)}
+.item.special .kicker{background:var(--holo); background-size:200%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:holo 6s linear infinite}
+.name{font-family:var(--display); font-weight:700; font-size:21px; line-height:1; color:#fff;
+  text-shadow:0 2px 18px var(--glow); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.meta{display:flex; align-items:center; gap:7px; min-width:0}
+.rar{font-family:var(--body); font-size:9px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+  padding:4px 8px; border-radius:99px; color:#0c0a1c; white-space:nowrap}
 .rar.rare{background:var(--r-rare)} .rar.epic{background:var(--r-epic); color:#fff}
 .rar.legendary{background:var(--r-legend)} .rar.mythic{background:linear-gradient(100deg,#ffe27a,#e39a1c)}
 .rar.special{background:var(--holo); background-size:220%; animation:holo 5s linear infinite}
-.tdot{width:13px; height:13px; border-radius:50%; box-shadow:0 0 8px currentColor}
-.themelabel{font-size:12px; font-weight:700; color:var(--muted)}
+.tdot{width:11px; height:11px; border-radius:50%; box-shadow:0 0 8px currentColor; flex:0 0 auto}
+.theme{font-size:11px; font-weight:800; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
-/* dots */
-.dots{display:flex; justify-content:center; gap:6px; margin-top:12px; flex-wrap:wrap; max-width:320px; margin-inline:auto}
-.dots i{width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.22); transition:.3s}
-.dots i.on{background:var(--hunt); box-shadow:0 0 8px var(--hunt); width:20px; border-radius:99px}
-
-/* CAUGHT celebration */
-.caught{position:absolute; inset:0; z-index:5; pointer-events:none; opacity:0}
+.caught{position:absolute; inset:0; z-index:5; pointer-events:none; opacity:0; display:grid; place-items:center;
+  background:linear-gradient(90deg,rgba(6,36,15,.78),rgba(10,8,24,.42)); transition:opacity .18s}
 .caught.go{opacity:1}
-.flash{position:absolute; inset:0; background:#fff; opacity:0; border-radius:26px}
-.caught.go .flash{animation:flash .6s ease-out}
-@keyframes flash{0%{opacity:0} 12%{opacity:.9} 100%{opacity:0}}
-.ribbon{position:absolute; top:52%; left:-14%; width:128%; padding:11px 0; transform:translateY(-50%) rotate(-9deg) scale(.4);
-  background:linear-gradient(100deg,#38e07a,#19b45e); text-align:center; opacity:0;
-  font-family:var(--display); font-weight:700; font-size:23px; letter-spacing:.06em; color:#06240f;
-  box-shadow:0 10px 30px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,.35)}
-.caught.go .ribbon{animation:slam .5s cubic-bezier(.2,1.5,.4,1) .18s forwards}
-@keyframes slam{to{opacity:1; transform:translateY(-50%) rotate(-9deg) scale(1)}}
-.stamp{position:absolute; top:16px; right:16px; width:52px; height:52px; border-radius:50%;
-  background:var(--owned); display:grid; place-items:center; color:#06240f; font-size:30px; font-weight:800;
-  transform:scale(0) rotate(-30deg); box-shadow:0 0 26px rgba(56,224,122,.8)}
-.caught.go .stamp{animation:stamp .5s cubic-bezier(.2,1.6,.4,1) .32s forwards}
-@keyframes stamp{to{transform:scale(1) rotate(-12deg)}}
+.caught-card{display:flex; align-items:center; gap:18px; min-width:min(640px,92%); padding:14px 20px; border-radius:22px;
+  background:linear-gradient(90deg,rgba(56,224,122,.95),rgba(25,180,94,.95));
+  color:#06240f; box-shadow:0 18px 48px rgba(0,0,0,.52),0 0 35px rgba(56,224,122,.65);
+  transform:translateY(16px) scale(.92); animation:caughtIn .36s cubic-bezier(.2,1.5,.4,1) forwards}
+.caught-card img{width:76px; height:76px; object-fit:contain; filter:drop-shadow(0 9px 14px rgba(0,0,0,.35))}
+.caught-text{min-width:0}
+.caught-label{font-family:var(--display); font-weight:700; font-size:28px; letter-spacing:.03em}
+.caught-name{font-family:var(--display); font-weight:700; font-size:18px; opacity:.86; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.check{margin-left:auto; width:54px; height:54px; border-radius:50%; display:grid; place-items:center;
+  background:rgba(255,255,255,.22); font-size:34px; font-weight:900}
 
-/* caught art transform */
-.card.caught-state img{filter:grayscale(0) brightness(1.05) saturate(1.15) drop-shadow(0 12px 22px rgba(0,0,0,.5))!important; transform:scale(1.08)}
-.card.caught-state .reticle{opacity:0; transition:opacity .3s}
-
-/* all-caught trophy */
-.card.done{border-color:rgba(255,210,74,.6); box-shadow:0 26px 60px -26px rgba(0,0,0,.85),0 0 60px -14px rgba(255,210,74,.7)}
-.trophy{font-size:88px; line-height:1; margin:26px 0 8px; animation:bob 3s ease-in-out infinite; filter:drop-shadow(0 8px 20px rgba(255,210,74,.6))}
-.done-title{font-family:var(--display); font-weight:700; font-size:26px; color:#fff; text-align:center; text-shadow:0 2px 22px rgba(255,210,74,.7)}
-.done-sub{color:var(--muted); font-size:14px; font-weight:600; margin-top:8px; text-align:center}
-
+.done{height:100%; display:grid; place-items:center; text-align:center; padding:16px}
+.done-title{font-family:var(--display); font-weight:700; font-size:28px; color:#fff; text-shadow:0 2px 22px rgba(255,210,74,.7)}
+.done-sub{color:var(--muted); font-size:14px; font-weight:700; margin-top:5px}
+.setup{height:100%; display:grid; place-items:center; text-align:center; padding:18px}
+.setup .name{white-space:normal; font-size:22px}
 .confetti{position:absolute; width:10px; height:10px; z-index:6; pointer-events:none; border-radius:2px}
 
+@keyframes bob{0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)}}
 @keyframes holo{to{background-position:300% 0}}
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes caughtIn{to{transform:none}}
+@media (max-width:640px){
+  .wrap{width:100vw}
+  .stage{height:148px}
+  .track{gap:8px; padding:10px}
+  .item{grid-template-columns:62px minmax(0,1fr); gap:8px; padding:9px}
+  .art{width:62px;height:62px}
+  .name{font-size:17px}
+  .hud{height:34px}
+  .range{display:none}
+}
 @media (prefers-reduced-motion:reduce){
-  .art img,.eyebrow .ret,.reticle .ring,.trophy{animation:none}
+  .art img,.eyebrow .ret,.reticle .ring{animation:none}
 }
 </style>
 
 <div class="wrap">
   <div class="hud">
     <span class="eyebrow"><span class="ret"></span>Now Hunting</span>
-    <span class="left"><b id="leftN">0</b> left</span>
+    <div class="status">
+      <span class="range" id="rangeText">Viewing 0-0</span>
+      <span class="left"><b id="leftN">0</b> left</span>
+    </div>
   </div>
   <div class="stage">
-    <div class="card in" id="card"></div>
+    <div class="track in" id="track"></div>
+    <div class="caught" id="caught"></div>
   </div>
-  <div class="dots" id="dots"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5/dist/mqtt.min.js"></script>
@@ -142,22 +150,23 @@ body{font-family:var(--body); color:var(--ink); display:grid; place-items:center
 <script>
 const APPDATA = window.SPRITE_DATA;
 const SPRITES = APPDATA.sprites, IMAGES = APPDATA.images, MISSING = APPDATA.missing;
-const THEME_COLOR = {Basic:'var(--t-basic)',Gold:'var(--t-gold)',Candy:'var(--t-gummy)',Galaxy:'var(--t-galaxy)',Gem:'var(--t-gem)',Holofoil:'var(--t-holo)',Rift:'var(--t-rift)'};
+const THEME_COLOR = {Basic:'var(--t-basic)',Gold:'var(--t-gold)',Candy:'var(--t-gummy)',Galaxy:'var(--t-galaxy)',Gem:'var(--t-gem)',Holofoil:'var(--t-holo)',Rift:'var(--t-rift)',Cube:'var(--t-cube)',Quack:'var(--t-quack)'};
 const RARITY_GLOW = {Rare:'var(--r-rare)',Epic:'var(--r-epic)',Legendary:'var(--r-legend)',Mythic:'var(--r-mythic)',Special:'var(--t-holo)'};
 const RARITY_RANK = {Mythic:5,Legendary:4,Epic:3,Special:2,Rare:1};
 const THEME_LABEL = {Candy:'Gummy'};
-const KEY = 'spriteHuntState_v1';
 const BY_ID = Object.fromEntries(SPRITES.map(s=>[s.id,s]));
 
-// URL params: ?speed=4500 (ms per sprite)
 const params = new URLSearchParams(location.search);
 const SPEED = Math.max(2000, +params.get('speed') || 4500);
+const SHOW = Math.max(1, Math.min(5, +params.get('show') || 3));
 
-const card = document.getElementById('card');
-const dotsEl = document.getElementById('dots');
+const track = document.getElementById('track');
+const caughtEl = document.getElementById('caught');
 const leftEl = document.getElementById('leftN');
+const rangeEl = document.getElementById('rangeText');
+track.style.setProperty('--show', SHOW);
 
-let hunting = [];      // current list of sprite objects still being hunted (sorted, rarest first)
+let hunting = [];
 let idx = 0;
 let cycleTimer = null;
 let celebrating = false;
@@ -166,179 +175,188 @@ let started = false;
 let cycleStarted = false;
 let pendingList = null;
 
-/* ---------- local cache (instant paint on OBS refresh) ---------- */
 const CACHE_KEY = 'spriteHuntState_v1';
 function readCache(){ try{ const r=localStorage.getItem(CACHE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
 function writeCache(m){ try{ localStorage.setItem(CACHE_KEY, JSON.stringify(m)); }catch(e){} }
+
 function huntingFrom(state){
   return SPRITES.filter(s=>{
     if(s.unreleased) return false;
     if(state && state[s.id]) return !state[s.id].owned;
-    // no saved state yet -> fall back to the known missing set
     return MISSING.includes(s.id);
   }).sort((a,b)=>(RARITY_RANK[b.rarity]-RARITY_RANK[a.rarity]) || a.name.localeCompare(b.name));
 }
 
-/* ---------- apply incoming state (from live sync, or local cache on refresh) ---------- */
 function applyState(map, silent){
   const next = huntingFrom(map);
   leftEl.textContent = next.length;
 
-  if(silent || !started){          // set a baseline without firing catch animations
+  if(silent || !started){
     hunting = next; started = true;
     if(idx >= hunting.length) idx = 0;
-    buildDots();
-    if(!celebrating) showCurrent(true);
+    renderRow(true);
     if(!cycleStarted){ startCycle(); cycleStarted = true; }
     return;
   }
+
   const nextIds = new Set(next.map(s=>s.id));
   const prevIds = new Set(hunting.map(s=>s.id));
   const caught = [...prevIds].filter(id=>!nextIds.has(id) && map && map[id] && map[id].owned);
   if(caught.length){
-    catchQueue.push(...caught.map(id=>BY_ID[id]));
+    catchQueue.push(...caught.map(id=>BY_ID[id]).filter(Boolean));
     pendingList = next;
     if(!celebrating) runCatch();
     return;
   }
-  hunting = next; buildDots();
-  if(idx>=hunting.length) idx=0;
-  if(!celebrating) showCurrent(true);
+
+  hunting = next;
+  if(idx >= hunting.length) idx = 0;
+  if(!celebrating) renderRow(false);
 }
 
-/* ---------- render current sprite ---------- */
-function render(sp){
-  if(!sp){ renderDone(); return; }
-  const glow = RARITY_GLOW[sp.rarity];
-  const special = sp.rarity==='Special';
-  card.className = 'card in' + (special?' special':'');
-  card.style.setProperty('--glow', glow);
-  card.innerHTML = `
-    <div class="rarity-eyebrow">${special?'Special':sp.rarity} target</div>
-    <div class="art">
-      <div class="aura"></div>
-      <img src="${IMAGES[sp.id]||''}" alt="">
-      <div class="reticle"><div class="ring"></div>
-        <div class="cross h"></div><div class="cross h2"></div><div class="cross v"></div><div class="cross v2"></div>
+function windowSprites(){
+  if(!hunting.length) return [];
+  const count = Math.min(SHOW, hunting.length);
+  return Array.from({length:count},(_,i)=>hunting[(idx+i)%hunting.length]);
+}
+
+function renderItem(sp, lead){
+  const glow = RARITY_GLOW[sp.rarity] || RARITY_GLOW.Rare;
+  const special = sp.rarity === 'Special';
+  return `
+    <div class="item ${lead?'lead':''} ${special?'special':''}" style="--glow:${glow}">
+      <div class="art">
+        <div class="aura"></div>
+        <img src="${IMAGES[sp.id]||''}" alt="">
+        ${lead?'<div class="reticle"><div class="ring"></div><div class="cross h"></div><div class="cross h2"></div><div class="cross v"></div><div class="cross v2"></div></div>':''}
       </div>
-    </div>
-    <div class="name">${sp.name}</div>
-    <div class="meta">
-      <span class="rar ${sp.rarity.toLowerCase()}">${sp.rarity}</span>
-      <span class="tdot" style="color:${THEME_COLOR[sp.theme]}"></span>
-      <span class="themelabel">${THEME_LABEL[sp.theme]||sp.theme}</span>
-    </div>
-    <div class="caught" id="caught">
-      <div class="flash"></div>
-      <div class="ribbon">SPRITE CAUGHT!</div>
-      <div class="stamp">✓</div>
+      <div class="info">
+        <div class="kicker">${lead?'Current target':'Up next'}</div>
+        <div class="name">${sp.name}</div>
+        <div class="meta">
+          <span class="rar ${sp.rarity.toLowerCase()}">${sp.rarity}</span>
+          <span class="tdot" style="color:${THEME_COLOR[sp.theme]||'var(--muted)'}"></span>
+          <span class="theme">${THEME_LABEL[sp.theme]||sp.theme}</span>
+        </div>
+      </div>
     </div>`;
 }
+
+function renderRow(instant){
+  if(!hunting.length){ renderDone(); return; }
+
+  const first = idx + 1;
+  const last = Math.min(idx + Math.min(SHOW, hunting.length), hunting.length);
+  rangeEl.textContent = hunting.length <= SHOW ? 'Viewing all' : `Viewing ${first}-${last}`;
+
+  const html = windowSprites().map((sp,i)=>renderItem(sp,i===0)).join('');
+  if(instant){
+    track.className = 'track in';
+    track.innerHTML = html;
+    return;
+  }
+  track.classList.remove('in');
+  track.classList.add('out');
+  setTimeout(()=>{
+    track.innerHTML = html;
+    track.classList.remove('out');
+    track.classList.add('in');
+  }, 250);
+}
+
 function renderDone(){
-  card.className = 'card in done';
-  card.style.setProperty('--glow','var(--r-mythic)');
-  card.innerHTML = `
-    <div class="trophy">🏆</div>
-    <div class="done-title">Collection Complete!</div>
-    <div class="done-sub">Every sprite caught. Legendary hunt.</div>`;
-  dotsEl.innerHTML='';
-}
-function buildDots(){
-  dotsEl.innerHTML='';
-  if(hunting.length<=1) return;
-  const max = Math.min(hunting.length, 30);
-  for(let i=0;i<max;i++){ const d=document.createElement('i'); if(i===idx) d.className='on'; dotsEl.appendChild(d); }
-}
-function setDots(){ [...dotsEl.children].forEach((d,i)=>d.className = i===idx?'on':''); }
-
-function showCurrent(instant){
-  if(!hunting.length){ render(null); return; }
-  if(idx>=hunting.length) idx=0;
-  if(instant){ render(hunting[idx]); setDots(); return; }
-  card.classList.add('out');
-  setTimeout(()=>{ render(hunting[idx]); setDots(); }, 420);
+  rangeEl.textContent = 'Complete';
+  track.className = 'track in';
+  track.innerHTML = `<div class="done" style="grid-column:1/-1">
+    <div>
+      <div class="done-title">🏆 Collection Complete!</div>
+      <div class="done-sub">Every sprite caught. Legendary hunt.</div>
+    </div>
+  </div>`;
 }
 
-/* ---------- cycling ---------- */
 function startCycle(){
   clearInterval(cycleTimer);
   cycleTimer = setInterval(()=>{
-    if(celebrating || hunting.length<=1) return;
-    idx = (idx+1) % hunting.length;
-    showCurrent(false);
+    if(celebrating || hunting.length <= 1) return;
+    idx = (idx + 1) % hunting.length;
+    renderRow(false);
   }, SPEED);
 }
 
-/* ---------- catch celebration ---------- */
 function runCatch(){
   const sp = catchQueue.shift();
-  if(!sp){ // done celebrating: apply the pending list
-    celebrating=false;
-    if(pendingList){ hunting=pendingList; pendingList=null; }
-    idx = 0; buildDots(); showCurrent(true); startCycle();
+  if(!sp){
+    celebrating = false;
+    caughtEl.className = 'caught';
+    if(pendingList){ hunting = pendingList; pendingList = null; }
+    idx = 0;
+    renderRow(true);
+    startCycle();
     return;
   }
+
   celebrating = true;
   clearInterval(cycleTimer);
-  // switch to the caught sprite, then play sequence
-  card.classList.add('out');
+  caughtEl.innerHTML = `
+    <div class="caught-card">
+      <img src="${IMAGES[sp.id]||''}" alt="">
+      <div class="caught-text">
+        <div class="caught-label">SPRITE CAUGHT!</div>
+        <div class="caught-name">${sp.name}</div>
+      </div>
+      <div class="check">✓</div>
+    </div>`;
+  caughtEl.className = 'caught go';
+  burst();
+
   setTimeout(()=>{
-    render(sp);
-    requestAnimationFrame(()=>{
-      card.classList.add('caught-state');
-      const c = document.getElementById('caught');
-      if(c) c.classList.add('go');
-      burst();
-      setTimeout(()=>{
-        card.classList.add('out');
-        setTimeout(runCatch, 430);   // next in queue (or finish)
-      }, 2300);
-    });
-  }, 430);
+    caughtEl.className = 'caught';
+    setTimeout(runCatch, 260);
+  }, 2100);
 }
 
-/* ---------- confetti ---------- */
 function burst(){
   if(matchMedia('(prefers-reduced-motion:reduce)').matches) return;
-  const r = card.getBoundingClientRect();
+  const r = caughtEl.getBoundingClientRect();
   const cx = r.left + r.width/2, cy = r.top + r.height/2;
   const cols=['#00e5ff','#ff4dd8','#ffd24a','#38e07a','#8b6bff','#ffffff'];
-  for(let i=0;i<40;i++){
+  for(let i=0;i<34;i++){
     const d=document.createElement('div'); d.className='confetti';
     d.style.background=cols[i%cols.length];
     d.style.left=cx+'px'; d.style.top=cy+'px';
     document.body.appendChild(d);
-    const ang=Math.random()*Math.PI*2, dist=70+Math.random()*150;
+    const ang=Math.random()*Math.PI*2, dist=70+Math.random()*170;
     d.animate([
       {transform:'translate(-50%,-50%) rotate(0) scale(1)', opacity:1},
-      {transform:`translate(${Math.cos(ang)*dist-50}%,${Math.sin(ang)*dist+Math.random()*120-50}%) rotate(${Math.random()*720}deg) scale(.2)`, opacity:0}
-    ],{duration:1000+Math.random()*600, easing:'cubic-bezier(.15,.8,.3,1)'}).onfinish=()=>d.remove();
+      {transform:`translate(${Math.cos(ang)*dist}px,${Math.sin(ang)*dist}px) rotate(${Math.random()*720}deg) scale(.2)`, opacity:0}
+    ],{duration:900+Math.random()*600, easing:'cubic-bezier(.15,.8,.3,1)'}).onfinish=()=>d.remove();
   }
 }
 
-/* ---------- no room set: show setup hint ---------- */
 function showNoRoom(){
-  card.className='card in';
-  card.style.setProperty('--glow','var(--r-legend)');
-  card.innerHTML = '<div class="rarity-eyebrow">Setup</div>'
-    + '<div class="name" style="font-size:21px;margin-top:26px">Add your room code</div>'
-    + '<div class="done-sub" style="margin-top:14px">Open this overlay using the link from your dashboard\'s <b>Copy</b> button.<br>It ends with <b>?room=…</b></div>';
-  dotsEl.innerHTML='';
-  leftEl.textContent = '—';
+  rangeEl.textContent = 'Setup';
+  leftEl.textContent = '-';
+  track.className = 'track in';
+  track.innerHTML = `<div class="setup" style="grid-column:1/-1">
+    <div>
+      <div class="name">Add your room code</div>
+      <div class="done-sub">Use the overlay link from the dashboard Copy button. It ends with <b>?room=...</b></div>
+    </div>
+  </div>`;
 }
 
-/* ---------- go: live via SpriteSync ---------- */
 (function boot(){
   const room = new URLSearchParams(location.search).get('room');
   if(!room){ showNoRoom(); return; }
-  applyState(readCache(), true);            // instant paint from cache while we connect
+  applyState(readCache(), true);
   let first = true;
   SpriteSync.init({
     room,
     onState:(msg)=>{
       if(!msg || !msg.data) return;
       writeCache(msg.data);
-      applyState(msg.data, first);          // first real message = silent baseline (no false catches)
+      applyState(msg.data, first);
       first = false;
     },
     onStatus:()=>{}
