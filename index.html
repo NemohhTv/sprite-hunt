@@ -13,7 +13,7 @@
   --ink:#f2ecff; --muted:#a99fd6; --faint:#6f6699;
   --hunt:#ff44b8; --owned:#38e07a; --owned-dim:#1f7a48;
   --r-rare:#37a9ff; --r-epic:#b14bff; --r-legend:#ff9d2b; --r-mythic:#ffd24a;
-  --t-basic:#93a0bd; --t-gold:#f5c542; --t-gummy:#ff6ec7; --t-galaxy:#8b6bff; --t-gem:#34e0d0; --t-holo:#38e8ff; --t-rift:#c266ff;
+  --t-basic:#93a0bd; --t-gold:#f5c542; --t-gummy:#ff6ec7; --t-galaxy:#8b6bff; --t-gem:#34e0d0; --t-holo:#38e8ff; --t-rift:#c266ff; --t-cube:#7bd2ff; --t-quack:#ffd24a;
   --holo:linear-gradient(115deg,#00e5ff 0%,#ff4dd8 34%,#ffd24a 66%,#00e5ff 100%);
   --display:'Fredoka','Trebuchet MS',system-ui,sans-serif;
   --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -186,17 +186,31 @@ body.transparent .shell{background:rgba(10,8,23,.42); backdrop-filter:blur(3px)}
   .stats{justify-content:center; flex-wrap:wrap}
   .scope{margin:0 auto}
 }
-.syncbar{display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin:16px 2px 2px; padding:11px 16px;
+.syncbar{display:grid; grid-template-columns:auto 1fr auto; gap:11px 14px; align-items:center; margin:16px 2px 2px; padding:11px 16px;
   background:rgba(255,255,255,.04); border:1px solid var(--stroke2); border-radius:14px}
-.syncbar .st{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink)}
+.syncbar .st{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink); white-space:nowrap}
 .syncbar .st .dot{width:9px; height:9px; border-radius:50%; background:#8a84b0; transition:.25s}
-.syncbar .divx{width:1px; height:20px; background:var(--stroke2)}
-.syncbar .lab{font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-weight:700}
-.syncbar input{flex:1; min-width:200px; font-family:var(--body); font-size:12.5px; color:var(--ink);
+.sync-main{display:flex; align-items:center; gap:12px; min-width:0}
+.syncbar .divx{width:1px; height:20px; background:var(--stroke2); flex:none}
+.syncbar .lab,.overlay-tools .lab{font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); font-weight:700; white-space:nowrap}
+.syncbar input{font-family:var(--body); font-size:12.5px; color:var(--ink);
   padding:8px 12px; border-radius:10px; border:1px solid var(--stroke); background:rgba(0,0,0,.28)}
-.syncbar input:focus{outline:none; border-color:var(--hunt)}
-.syncbar .room{font-size:12px; color:var(--muted); font-weight:600}
+.syncbar input:focus,.overlay-tools select:focus{outline:none; border-color:var(--hunt)}
+.syncbar #overlayUrl{flex:1; min-width:260px}
+.syncbar .room{font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap}
 .syncbar .room b{color:var(--ink); letter-spacing:.06em}
+.overlay-tools{grid-column:1/-1; display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding-top:10px; border-top:1px solid var(--stroke)}
+.overlay-tools label{display:inline-flex; align-items:center; gap:7px; font-size:11.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.08em}
+.overlay-tools select{font-family:var(--body); font-size:12.5px; font-weight:700; color:var(--ink);
+  padding:7px 28px 7px 10px; border-radius:10px; border:1px solid var(--stroke); background:rgba(0,0,0,.28); cursor:pointer}
+.overlay-tools .obs-size{font-size:12px; color:var(--muted); font-weight:600; margin-left:auto; white-space:nowrap}
+.overlay-tools .obs-size b{color:var(--ink); letter-spacing:.04em}
+@media (max-width:980px){
+  .syncbar{grid-template-columns:1fr}
+  .sync-main{flex-wrap:wrap}
+  .syncbar #overlayUrl{min-width:100%}
+  .overlay-tools .obs-size{margin-left:0}
+}
 </style>
 
 <div class="shell">
@@ -230,11 +244,42 @@ body.transparent .shell{background:rgba(10,8,23,.42); backdrop-filter:blur(3px)}
 
   <div class="syncbar">
     <span class="st"><span class="dot" id="syncDot"></span><span id="syncLabel">Connecting…</span></span>
-    <span class="divx"></span>
-    <span class="lab">OBS overlay URL</span>
-    <input id="overlayUrl" readonly value="">
-    <button class="act" id="copyUrl">Copy</button>
-    <span class="room">room <b id="roomCode">—</b></span>
+    <div class="sync-main">
+      <span class="divx"></span>
+      <span class="lab">OBS overlay URL</span>
+      <input id="overlayUrl" readonly value="">
+      <button class="act" id="copyUrl">Copy URL</button>
+      <span class="room">room <b id="roomCode">—</b></span>
+    </div>
+    <div class="overlay-tools">
+      <span class="lab">Overlay controls</span>
+      <label>Shown
+        <select id="ovShow">
+          <option value="1">1 sprite</option>
+          <option value="2">2 sprites</option>
+          <option value="3" selected>3 sprites</option>
+          <option value="4">4 sprites</option>
+          <option value="5">5 sprites</option>
+        </select>
+      </label>
+      <label>Speed
+        <select id="ovSpeed">
+          <option value="2500">Fast 2.5s</option>
+          <option value="3500">Smooth 3.5s</option>
+          <option value="4500" selected>Default 4.5s</option>
+          <option value="6000">Slow 6s</option>
+        </select>
+      </label>
+      <label>OBS size
+        <select id="ovSize">
+          <option value="compact">Compact 720 × 180</option>
+          <option value="wide" selected>Wide 900 × 210</option>
+          <option value="large">Large 1080 × 240</option>
+        </select>
+      </label>
+      <span class="obs-size">Set OBS to <b id="obsSize">900 × 210</b></span>
+      <button class="act" id="copyObsSize">Copy size</button>
+    </div>
   </div>
 
   <div class="controls">
@@ -272,9 +317,9 @@ body.transparent .shell{background:rgba(10,8,23,.42); backdrop-filter:blur(3px)}
 <script>
 const APPDATA = window.SPRITE_DATA;
 const SPRITES = APPDATA.sprites, IMAGES = APPDATA.images, MISSING = APPDATA.missing;
-const THEMES = ['Basic','Gold','Candy','Galaxy','Gem','Holofoil','Rift'];
+const THEMES = ['Basic','Gold','Candy','Galaxy','Gem','Holofoil','Rift','Cube','Quack'];
 const THEME_LABEL = {Candy:'Gummy'};
-const THEME_COLOR = {Basic:'var(--t-basic)',Gold:'var(--t-gold)',Candy:'var(--t-gummy)',Galaxy:'var(--t-galaxy)',Gem:'var(--t-gem)',Holofoil:'var(--t-holo)',Rift:'var(--t-rift)'};
+const THEME_COLOR = {Basic:'var(--t-basic)',Gold:'var(--t-gold)',Candy:'var(--t-gummy)',Galaxy:'var(--t-galaxy)',Gem:'var(--t-gem)',Holofoil:'var(--t-holo)',Rift:'var(--t-rift)',Cube:'var(--t-cube)',Quack:'var(--t-quack)'};
 const RARITY_COLOR = {Rare:'var(--r-rare)',Epic:'var(--r-epic)',Legendary:'var(--r-legend)',Mythic:'var(--r-mythic)',Special:'var(--holo)'};
 const KEY = 'spriteHuntState_v1';
 
@@ -437,6 +482,64 @@ document.getElementById('btnReset').onclick = ()=>{
   if(confirm('Reset all sprites to their starting state? This clears your saved progress.')){ state = defaultState(); save(); render(); }
 };
 
+/* ---- OBS overlay URL controls ---- */
+const OVERLAY_KEY = 'spriteHuntOverlaySettings_v1';
+const OBS_SIZES = {
+  compact:{label:'720 × 180', text:'720 x 180'},
+  wide:{label:'900 × 210', text:'900 x 210'},
+  large:{label:'1080 × 240', text:'1080 x 240'}
+};
+let overlayRoom = null;
+let overlaySettings = {show:'3', speed:'4500', size:'wide'};
+function loadOverlaySettings(){
+  try{ overlaySettings = {...overlaySettings, ...(JSON.parse(localStorage.getItem(OVERLAY_KEY))||{})}; }catch(e){}
+  if(!['1','2','3','4','5'].includes(String(overlaySettings.show))) overlaySettings.show = '3';
+  if(!['2500','3500','4500','6000'].includes(String(overlaySettings.speed))) overlaySettings.speed = '4500';
+  if(!OBS_SIZES[overlaySettings.size]) overlaySettings.size = 'wide';
+}
+function saveOverlaySettings(){ try{ localStorage.setItem(OVERLAY_KEY, JSON.stringify(overlaySettings)); }catch(e){} }
+function buildOverlayUrl(room){
+  let base = SpriteSync.overlayUrl(room);
+  try{
+    const u = new URL(base, location.href);
+    u.searchParams.set('show', overlaySettings.show);
+    u.searchParams.set('speed', overlaySettings.speed);
+    u.searchParams.set('v', 'horizontal');
+    return u.href;
+  }catch(e){
+    return base + '&show=' + encodeURIComponent(overlaySettings.show) + '&speed=' + encodeURIComponent(overlaySettings.speed) + '&v=horizontal';
+  }
+}
+function updateOverlayControls(){
+  const show = document.getElementById('ovShow'), speed = document.getElementById('ovSpeed'), size = document.getElementById('ovSize'), obs = document.getElementById('obsSize');
+  if(show) show.value = overlaySettings.show;
+  if(speed) speed.value = overlaySettings.speed;
+  if(size) size.value = overlaySettings.size;
+  if(obs) obs.textContent = OBS_SIZES[overlaySettings.size].label;
+  if(overlayRoom) document.getElementById('overlayUrl').value = buildOverlayUrl(overlayRoom);
+}
+function wireOverlayControls(){
+  loadOverlaySettings();
+  ['ovShow','ovSpeed','ovSize'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.onchange = ()=>{
+      overlaySettings = {show:document.getElementById('ovShow').value, speed:document.getElementById('ovSpeed').value, size:document.getElementById('ovSize').value};
+      saveOverlaySettings();
+      updateOverlayControls();
+    };
+  });
+  const copySize = document.getElementById('copyObsSize');
+  if(copySize){
+    copySize.onclick = ()=>{
+      const text = OBS_SIZES[overlaySettings.size].text;
+      const done = ()=>{ const o=copySize.textContent; copySize.textContent='Copied ✓'; setTimeout(()=>copySize.textContent=o,1400); };
+      if(navigator.clipboard){ navigator.clipboard.writeText(text).then(done).catch(done); }
+      else done();
+    };
+  }
+  updateOverlayControls();
+}
 /* ---- go ---- */
 /* ---------- live sync to the OBS overlay ---------- */
 let lastTs = 0, pubTimer = null;
@@ -458,8 +561,9 @@ function setSyncStatus(s){
 }
 function initSync(){
   const room = SpriteSync.resolveRoom();
+  overlayRoom = room;
   document.getElementById('roomCode').textContent = room;
-  document.getElementById('overlayUrl').value = SpriteSync.overlayUrl(room);
+  updateOverlayControls();
   SpriteSync.init({ room, onState:onRemote, onStatus:setSyncStatus });
   setTimeout(()=>{ if(SpriteSync.state==='live') publishState(); }, 1400); // seed broker with current state
 }
@@ -470,5 +574,5 @@ document.getElementById('copyUrl').onclick = ()=>{
   else { document.execCommand('copy'); done(); }
 };
 
-load(); render(); initSync();
+load(); render(); wireOverlayControls(); initSync();
 </script>
